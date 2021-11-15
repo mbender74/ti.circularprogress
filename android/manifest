@@ -13,6 +13,6 @@ copyright: Copyright (c) 2021 by Your Company
 # these should not be edited
 name: ti.circularprogress
 moduleid: ti.circularprogress
-guid: cd9b6fb3-38f5-48be-89f4-df1a20aa95c7
+guid: 47b4cc25-b267-4ee8-8d9a-1863332b480c
 platform: android
-minsdk: 10.2.0
+minsdk: 10.1.0.GA
