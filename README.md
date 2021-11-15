@@ -6,17 +6,39 @@
 	width:100,
 	trackColor:'#66ffffff',
 	roundedCorners:true,
-	progressThickness:0.2,
-	trackThickness:0.5,
-	gradientRotateSpeed:2.0,
-	glowAmount:0.5,
+	progressWidth:0.5,
+	tackWidth:0.8,
+	duration:0.0, 
+	// when duration:0.0 -> circualrProgessView.progressValue=value is not animated, else animated
+	gradientRotateSpeed:1.0,
+	glowAmount:0.8,
 	progressValue:0.0
  });
 
- circualrProgessView.updateProgress({
-	progress:0.1
+ circualrProgessView.addEventListener('progressDone', function() {
+	//console.log("+++++++++++++++ circualrProgessView progressDone");
  });
+
+ circualrProgessView.addEventListener('progressing', function(e) {
+	//console.log("+++++++++++++++ circualrProgessView progressing: "+e.progressValue);
+ });
+
+ circualrProgessView.progressValue = 0.5;
+
+ circualrProgessView.animateProgress({
+	endValue:1.0,
+	duration:2
+ });
+
+ circualrProgessView.animateProgress({
+   startValue:0.0,
+   endValue:1.0,
+   duration:1
+ });
+
  ```
+## iOS
+using: https://github.com/kaandedeoglu/KDCircularProgress
 
 
 ## Android
