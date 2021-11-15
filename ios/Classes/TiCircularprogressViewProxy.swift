@@ -11,12 +11,45 @@ import TitaniumKit
 
 @objc(TiCircularprogressViewProxy)
 class TiCircularprogressViewProxy: TiViewProxy {
+    private var _duration: TimeInterval
+    private var _progressValue: NSNumber
 
+    @objc public var progressValue: NSNumber {
+        get { return _progressValue }
+        set {
+        _progressValue = newValue
+          self.replaceValue(newValue, forKey: "progressValue", notification: false)
+          if circularprogressView != nil {
+              if NSNumber(value:_duration) != 0.0 {
+                  circularprogressView.animate(toAngle: (_progressValue.doubleValue).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0, duration: _duration, relativeDuration: true, proxy:_viewProxy, completion: { result in
+                      self.circularprogressView.pauseAnimation()
+                      self.fireEvent("progressDone")
+                      //print("go to next lvl", result)
+                  })
+              }
+              else {
+                  //self.circularprogressView.stopAnimation()
+                  circularprogressView.progress = _progressValue
+              }
+          }
+        }
+      }
+
+    @objc public var duration: NSNumber {
+        get { return NSNumber(value:_duration) }
+        set {
+           _duration = TimeInterval(newValue.doubleValue)
+          self.replaceValue(newValue, forKey: "duration", notification: false)
+        }
+      }
+
+    
+    
+    var _viewProxy:TiViewProxy!
     var circularprogressView: KDCircularProgress!
     var trackColor:UIColor = UIColor.clear
     var roundedCorners:Bool = false
     var clockwise:Bool = true
-    var progressValue:CGFloat = 0.0
 
     var progressThickness:CGFloat = 0.2
     var trackThickness:CGFloat = 0.6
@@ -25,12 +58,12 @@ class TiCircularprogressViewProxy: TiViewProxy {
 
     
     override init() {
-           NSLog("[INFO] inside override init in ComKossoSwiftiViewProxy.swift ... ")
-           super.init()
-       }
+        _progressValue = NSNumber(value: 0.0)
+        _duration = TimeInterval(0.0)
+         super.init()
+     }
        
        override public func _init(withProperties properties: [AnyHashable : Any]!) {
-           NSLog("[INFO] inside override public func _init in ComKossoSwiftiViewProxy.swift ... ")
            let props = properties;
            super._init(withProperties: props)
            
@@ -45,28 +78,26 @@ class TiCircularprogressViewProxy: TiViewProxy {
            if properties["clockwise"] != nil {
                clockwise = TiUtils.boolValue(properties["clockwise"])
            }
-
-           if properties["progressValue"] != nil {
-               progressValue = TiUtils.floatValue(properties["progressValue"])
-           }
-
            
            if properties["gradientRotateSpeed"] != nil {
                gradientRotateSpeed = TiUtils.floatValue(properties["gradientRotateSpeed"])
            }
            
-           if properties["progressThickness"] != nil {
-               progressThickness = TiUtils.floatValue(properties["progressThickness"])
+           if properties["progressWidth"] != nil {
+               progressThickness = TiUtils.floatValue(properties["progressWidth"])
            }
 
-           if properties["trackThickness"] != nil {
-               trackThickness = TiUtils.floatValue(properties["trackThickness"])
+           if properties["tackWidth"] != nil {
+               trackThickness = TiUtils.floatValue(properties["tackWidth"])
            }
 
            if properties["glowAmount"] != nil {
                glowAmount = TiUtils.floatValue(properties["glowAmount"])
            }
 
+           _viewProxy = self
+
+           
            circularprogressView = KDCircularProgress(frame: CGRect(x:0, y:0, width:self.view.bounds.width, height:self.view.bounds.height))
 
            circularprogressView.startAngle = -90
@@ -78,13 +109,12 @@ class TiCircularprogressViewProxy: TiViewProxy {
            circularprogressView.glowMode = .forward
            circularprogressView.glowAmount = glowAmount
            circularprogressView.trackColor = trackColor
-           circularprogressView.progress = progressValue
+           circularprogressView.progress = _progressValue
            circularprogressView.set(colors: UIColor.red , UIColor.yellow)
+           circularprogressView.myProxy = self
            self.view.addSubview(circularprogressView)
        }
       
-    @objc public var progress: CGFloat = 0.0
-
 
     
   /**
@@ -158,23 +188,50 @@ class TiCircularprogressViewProxy: TiViewProxy {
   }
    
     
-@objc(updateProgress:)
-  public func updateProgress(arguments: Array<Any>?) {
+//@objc(_setProgressValue:)
+//   public func _setProgressColors(args: Array<Any>?) {
+//      // circularprogressView.set(colors: TiUtils.colorValue(args?[0])!.color)
+//}
 
+    
+    
+@objc(animateProgress:)
+  public func animateProgress(arguments: Array<Any>?) {
       guard let params = arguments?.first as? [String: Any] else {
-        debugPrint("[ERROR] No valid arguments provided")
         return
       }
-      
-      progress = CGFloat(TiUtils.floatValue(params["progress"]))
-      
-      
-      
-    var animated = NSNumber(value: true)
-    animated = params["animated"] as? NSNumber ?? animated
+      var animated = NSNumber(value: true)
+      animated = params["animated"] as? NSNumber ?? animated
 
-    circularprogressView.progress = Double(progress)
+      
+      
+      let animateDuration: TimeInterval = TimeInterval(TiUtils.intValue(params["duration"]))
+
+      if params["startValue"] != nil  && params["endValue"] != nil {
+          let startValue = CGFloat(TiUtils.floatValue(params["startValue"])).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0
+          let endValue = CGFloat(TiUtils.floatValue(params["endValue"])).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0
+
+          circularprogressView.animate(fromAngle: startValue, toAngle: endValue, duration: animateDuration, relativeDuration: true, proxy: self, completion: { result in
+              self.circularprogressView.pauseAnimation()
+              self.fireEvent("progressDone")
+              //print("go to next lvl", result)
+          })
+      }
+      else if params["startValue"] == nil && params["endValue"] != nil {
+          let endValue = CGFloat(TiUtils.floatValue(params["endValue"])).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0
+
+          circularprogressView.animate(toAngle: endValue, duration: animateDuration, relativeDuration: true, proxy: self, completion: { result in
+              self.circularprogressView.pauseAnimation()
+              self.fireEvent("progressDone")
+              //print("go to next lvl", result)
+          })
+      }
   }
 
     
+}
+private extension Comparable {
+    func myclamp(lowerBound: Self, upperBound: Self) -> Self {
+        return min(max(self, lowerBound), upperBound)
+    }
 }

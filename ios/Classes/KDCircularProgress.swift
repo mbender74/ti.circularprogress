@@ -6,14 +6,27 @@
 //
 
 import UIKit
+import TitaniumKit
 
 @objc public enum KDCircularProgressGlowMode: Int {
     case forward, reverse, constant, noGlow
 }
 
+public var parentProxy: TiViewProxy!
+
+public func updateProgress(value:Double) {
+    if parentProxy != nil {
+        parentProxy.fireEvent("progressing", with: ["progressValue": NSNumber(value: value.mod(between: 0.0, and: 360.0, byIncrementing: 360.0) / 360.0)])
+
+//        parentProxy.fireEvent("progressing")
+    }
+}
+
 @IBDesignable
 @objcMembers
 public class KDCircularProgress: UIView, CAAnimationDelegate {
+           
+    
     private var progressLayer: KDCircularProgressViewLayer {
         get {
             return layer as! KDCircularProgressViewLayer
@@ -26,9 +39,14 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         }
     }
     
-    public var progress: Double {
-        get { return angle.mod(between: 0.0, and: 360.0, byIncrementing: 360.0) / 360.0 }
-        set { angle = newValue.clamp(lowerBound: 0.0, upperBound: 1.0) * 360.0 }
+    public var myProxy: TiViewProxy {
+        get { return parentProxy }
+        set { parentProxy = newValue }
+    }
+    
+    public var progress: NSNumber {
+        get { return NSNumber(value: angle.mod(between: 0.0, and: 360.0, byIncrementing: 360.0) / 360.0) }
+        set { angle = newValue.doubleValue.clamp(lowerBound: 0.0, upperBound: 1.0) * 360.0 }
     }
     
     @IBInspectable public var angle: Double = 0.0 {
@@ -116,6 +134,7 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         set { set(colors: newValue) }
     }
     
+    
     //These are used only from the Interface-Builder. Changing these from code will have no effect.
     //Also IB colors are limited to 3, whereas programatically we can have an arbitrary number of them.
     @objc @IBInspectable private var IBColor1: UIColor?
@@ -190,8 +209,9 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         progressLayer.colorsArray = colors
         progressLayer.setNeedsDisplay()
     }
+        
     
-    public func animate(fromAngle: Double, toAngle: Double, duration: TimeInterval, relativeDuration: Bool = true, completion: ((Bool) -> Void)?) {
+    public func animate(fromAngle: Double, toAngle: Double, duration: TimeInterval, relativeDuration: Bool = true, proxy:TiViewProxy, completion: ((Bool) -> Void)?) {
         pauseIfAnimating()
         let animationDuration: TimeInterval
         if relativeDuration {
@@ -201,7 +221,6 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
             let scaledDuration = TimeInterval(traveledAngle) * duration / 360.0
             animationDuration = scaledDuration
         }
-        
         let animation = CABasicAnimation(keyPath: #keyPath(KDCircularProgressViewLayer.angle))
         animation.fromValue = fromAngle
         animation.toValue = toAngle
@@ -210,13 +229,12 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         animation.isRemovedOnCompletion = false
         angle = toAngle
         animationCompletionBlock = completion
-        
         progressLayer.add(animation, forKey: "angle")
     }
     
-    public func animate(toAngle: Double, duration: TimeInterval, relativeDuration: Bool = true, completion: ((Bool) -> Void)?) {
+    public func animate(toAngle: Double, duration: TimeInterval, relativeDuration: Bool = true, proxy:TiViewProxy, completion: ((Bool) -> Void)?) {
         pauseIfAnimating()
-        animate(fromAngle: angle, toAngle: toAngle, duration: duration, relativeDuration: relativeDuration, completion: completion)
+        animate(fromAngle: angle, toAngle: toAngle, duration: duration, relativeDuration: relativeDuration, proxy: proxy, completion: completion)
     }
     
     public func pauseAnimation() {
@@ -269,6 +287,7 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         var radius: CGFloat = 0.0 {
             didSet { invalidateGradientCache() }
         }
+
         var startAngle: Double = 0.0
         var clockwise: Bool = true {
             didSet {
@@ -343,10 +362,11 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         required init?(coder aDecoder: NSCoder) {
             super.init(coder: aDecoder)
         }
+
         
         override func draw(in ctx: CGContext) {
             UIGraphicsPushContext(ctx)
-            
+
             let size = bounds.size
             let width = size.width
             let height = size.height
@@ -408,7 +428,10 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
             } else {
                 drawGradient(withContext: ctx, colorsArray: colorsArray)
             }
-
+            
+            updateProgress(value: self.angle)
+            
+            
             ctx.restoreGState()
             UIGraphicsPopContext()
         }
@@ -481,6 +504,9 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         }
     }
 }
+
+
+
 
 //Some helper extensions below
 
