@@ -12,8 +12,23 @@
 	glowAmount:0.5,
 	progressValue:0.0
  });
- 
+
  circualrProgessView.updateProgress({
 	progress:0.1
  });
  ```
+
+
+## Android
+
+using: https://github.com/owl-93/Determinate-Progress-View/
+
+```
+repositories {
+maven { url 'https://jitpack.io' }
+}
+```
+
+```
+<uses-sdk android:minSdkVersion="22" />
+```
