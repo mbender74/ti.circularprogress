@@ -12,12 +12,7 @@
         android:padding="10dp"
         app:progress="95"
         app:strokeWidth="20dp"
-        app:textEnabled="true"
-        app:textSize="32sp"
-        app:gradientStartColor="@color/blue"
-        app:gradientCenterColor="@color/purple"
-        app:gradientEndColor="@color/teal"
-        app:strokeGradientStyle="candy_cane"
-        app:strokeGradientSize="stroke_only"/>
+        app:textEnabled="false"
+        />
 
 </LinearLayout>

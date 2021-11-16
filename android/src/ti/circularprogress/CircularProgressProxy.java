@@ -4,158 +4,197 @@
  * Copyright (c) 2009-2017 by Appcelerator, Inc. All Rights Reserved.
  * Licensed under the terms of the Apache Public License
  * Please see the LICENSE included with this distribution for details.
- *
  */
 package ti.circularprogress;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.widget.LinearLayout;
+
+import com.owl93.dpb.CircularProgressView;
+import com.owl93.dpb.DeterminateProgressViewListener;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
-import org.appcelerator.titanium.TiC;
-import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
-import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.proxy.TiViewProxy;
+import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiRHelper;
-import org.appcelerator.titanium.view.TiCompositeLayout;
-import org.appcelerator.titanium.view.TiCompositeLayout.LayoutArrangement;
 import org.appcelerator.titanium.view.TiUIView;
-
-import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.graphics.Color;
-import android.view.LayoutInflater;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
-import com.owl93.dpb.CircularProgressView;
-
-import java.util.HashMap;
 
 
 // This proxy can be created by calling TiCircularprogress.createExample({message: "hello world"})
-@Kroll.proxy(creatableInModule=TiCircularprogressModule.class)
-public class CircularProgressProxy extends TiViewProxy
-{
-	// Standard Debugging variables
-	private static final String LCAT = "ExampleProxy";
-	private static final boolean DBG = TiConfig.LOGD;
-	CircularProgressView progressBar;
-	int maxValue = 100;
-	int currentProgress = 0;
-	int duration = 1000;
-	int trackWidth = 30;
-	int trackAlpha = 100;
-	int strokeWidth = 30;
-	int trackColor = Color.BLACK;
+@Kroll.proxy(creatableInModule = TiCircularprogressModule.class)
+public class CircularProgressProxy extends TiViewProxy {
+    // Standard Debugging variables
+    private static final String LCAT = "ExampleProxy";
+    private static final boolean DBG = TiConfig.LOGD;
+    CircularProgressView progressBar;
+    int maxValue = 100;
+    int currentProgress = 0;
+    int duration = 1000;
+    int trackWidth = 30;
+    int trackAlpha = 100;
+    int strokeWidth = 30;
+    int trackColor = Color.BLACK;
+    int progressColor = Color.RED;
+    boolean roundedCorners = true;
 
-	private class CPV extends TiUIView
-	{
-		public CPV(TiViewProxy proxy) {
-			super(proxy);
+    // Constructor
+    public CircularProgressProxy() {
+        super();
+    }
 
-			int id_drawer_layout = 0;
-			int id_bottomSheet = 0;
-			LinearLayout layout;
+    @Override
+    public TiUIView createView(Activity activity) {
+        TiUIView view = new CPV(this);
+        view.getLayoutParams().autoFillsHeight = true;
+        view.getLayoutParams().autoFillsWidth = true;
+        return view;
+    }
 
-			try {
-				id_drawer_layout = TiRHelper.getResource("layout.main");
-				id_bottomSheet = TiRHelper.getResource("id.progressBar");
-			} catch (TiRHelper.ResourceNotFoundException e) {
-				//
-			}
+    // Handle creation options
+    @Override
+    public void handleCreationDict(KrollDict options) {
+        super.handleCreationDict(options);
 
-			LayoutInflater inflater = LayoutInflater.from(proxy.getActivity());
-			layout = (LinearLayout) inflater.inflate(id_drawer_layout, null);
-			progressBar = (CircularProgressView) layout.findViewById(id_bottomSheet);
+        if (options.containsKey("maxValue")) {
+            maxValue = options.getInt("maxValue");
+            if (progressBar != null) progressBar.setMaxValue(maxValue);
+        }
+        if (options.containsKey("progressValue")) {
+            currentProgress = options.getInt("progressValue");
+            if (progressBar != null) progressBar.setProgress(currentProgress);
+        }
+        if (options.containsKey("duration")) {
+            duration = options.getInt("duration");
+            if (progressBar != null) progressBar.setAnimationDuration(duration);
+        }
+        if (options.containsKey("trackWidth")) {
+            trackWidth = options.getInt("trackWidth");
+            if (progressBar != null) progressBar.setTrackWidth(trackWidth);
+        }
+        if (options.containsKey("trackColor")) {
+            trackColor = TiConvert.toColor(options.getString("trackColor"));
+            if (progressBar != null) progressBar.setTrackColor(trackColor);
+        }
+        if (options.containsKey("progressColor")) {
+            progressColor = TiConvert.toColor(options.getString("progressColor"));
+            if (progressBar != null) progressBar.setStrokeColor(trackColor);
+        }
+        if (options.containsKey("trackAlpha")) {
+            trackAlpha = options.getInt("trackAlpha");
+            if (progressBar != null) progressBar.setTrackAlpha(trackAlpha);
+        }
+        if (options.containsKey("progressWidth")) {
+            strokeWidth = options.getInt("progressWidth");
+            if (progressBar != null) progressBar.setStrokeWidth(strokeWidth);
+        }
+        if (options.containsKey("roundedCorners")) {
+            roundedCorners = options.getBoolean("roundedCorners");
+            if (progressBar != null) {
+                if (roundedCorners) {
+                    progressBar.setStrokeEnd(Paint.Cap.ROUND);
+                } else {
+                    progressBar.setStrokeEnd(Paint.Cap.SQUARE);
+                }
+            }
+        }
+    }
 
-			progressBar.setMaxValue(maxValue);
-			progressBar.setProgress(currentProgress);
-			progressBar.setAnimationDuration(duration);
-			progressBar.setTrackWidth(trackWidth);
-			progressBar.setTrackColor(trackColor);
-			progressBar.setTrackAlpha(trackAlpha);
-			progressBar.setStrokeWidth(strokeWidth);
+    @Kroll.method
+    public void animateProgress(KrollDict options) {
+        if (progressBar != null) {
+            int duration = (int) progressBar.getAnimationDuration();
 
-			setNativeView(layout);
-		}
+            if (options.containsKey("startValue")) {
+                currentProgress = options.getInt("startValue");
+                progressBar.setProgress(currentProgress);
+            }
+            if (options.containsKey("duration")) {
+                duration = options.getInt("duration");
+            }
+            if (options.containsKey("endValue")) {
+                currentProgress = options.getInt("endValue");
+            }
+            progressBar.animateProgressChange((float) currentProgress, (long) duration);
+        }
+    }
 
-		@Override
-		public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
-			super.propertyChanged(key, oldValue, newValue, proxy);
+    private class CPV extends TiUIView {
+        public CPV(TiViewProxy proxy) {
+            super(proxy);
 
-			if (key.equals("progressValue")) {
-				currentProgress = TiConvert.toInt(newValue);
-				if (progressBar != null) progressBar.animateProgressChange( (float) currentProgress, (long) duration);
-			}
-			if (key.equals("duration")) {
-				duration = TiConvert.toInt(newValue);
-				if (progressBar != null) progressBar.setAnimationDuration(duration);
-			}
-		}
+            int id_drawer_layout = 0;
+            int id_bottomSheet = 0;
+            LinearLayout layout;
 
-		@Override
-		public void processProperties(KrollDict d)
-		{
-			super.processProperties(d);
+            try {
+                id_drawer_layout = TiRHelper.getResource("layout.main");
+                id_bottomSheet = TiRHelper.getResource("id.progressBar");
+            } catch (TiRHelper.ResourceNotFoundException e) {
+                //
+            }
 
-		}
-	}
+            LayoutInflater inflater = LayoutInflater.from(proxy.getActivity());
+            layout = (LinearLayout) inflater.inflate(id_drawer_layout, null);
+            progressBar = (CircularProgressView) layout.findViewById(id_bottomSheet);
 
+            progressBar.setMaxValue(maxValue);
+            progressBar.setProgress(currentProgress);
+            progressBar.setAnimationDuration(duration);
+            progressBar.setTrackWidth(trackWidth);
+            progressBar.setTrackColor(trackColor);
+            progressBar.setStrokeColor(progressColor);
+            progressBar.setTrackAlpha(trackAlpha);
+            progressBar.setStrokeWidth(strokeWidth);
+            if (roundedCorners) {
+                progressBar.setStrokeEnd(Paint.Cap.ROUND);
+            } else {
+                progressBar.setStrokeEnd(Paint.Cap.SQUARE);
+            }
 
-	// Constructor
-	public CircularProgressProxy()
-	{
-		super();
-	}
+            progressBar.setAnimationListener(new DeterminateProgressViewListener(){
+                @Override
+                public void onAnimationStart(float from, float to) {
+                    KrollDict kd = new KrollDict();
+                    kd.put("from", from);
+                    kd.put("to", to);
+                    fireEvent("start" , kd);
+                }
+                @Override
+                public void onAnimationEnd() {
+                    fireEvent("done" , new KrollDict());
+                }
+            });
 
-	@Override
-	public TiUIView createView(Activity activity)
-	{
-		TiUIView view = new CPV(this);
-		view.getLayoutParams().autoFillsHeight = true;
-		view.getLayoutParams().autoFillsWidth = true;
-		return view;
-	}
+            setNativeView(layout);
+        }
 
-	// Handle creation options
-	@Override
-	public void handleCreationDict(KrollDict options)
-	{
-		super.handleCreationDict(options);
+        @Override
+        public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
+            super.propertyChanged(key, oldValue, newValue, proxy);
 
-		if (options.containsKey("maxValue")) {
-			maxValue = options.getInt("maxValue");
-			if (progressBar != null) progressBar.setMaxValue(maxValue);
-		}
-		if (options.containsKey("progressValue")) {
-			currentProgress = options.getInt("progressValue");
-			if (progressBar != null) progressBar.setProgress(currentProgress);
-		}
-		if (options.containsKey("duration")) {
-			duration = options.getInt("duration");
-			if (progressBar != null) progressBar.setAnimationDuration(duration);
-		}
-		if (options.containsKey("trackWidth")) {
-			trackWidth = options.getInt("trackWidth");
-			if (progressBar != null) progressBar.setTrackWidth(trackWidth);
-		}
-		if (options.containsKey("trackColor")) {
-			trackColor = TiConvert.toColor(options.getString("trackColor"));
-			if (progressBar != null) progressBar.setTrackColor(trackColor);
-		}
-		if (options.containsKey("trackAlpha")) {
-			trackAlpha = options.getInt("trackAlpha");
-			if (progressBar != null) progressBar.setTrackAlpha(trackAlpha);
-		}
-		if (options.containsKey("strokeWidth")) {
-			strokeWidth = options.getInt("strokeWidth");
-			if (progressBar != null) progressBar.setStrokeWidth(strokeWidth);
-		}
-	}
+            if (key.equals("progressValue")) {
+                currentProgress = TiConvert.toInt(newValue);
+                if (progressBar != null)
+                    progressBar.animateProgressChange((float) currentProgress, (long) duration);
+            }
+            if (key.equals("duration")) {
+                duration = TiConvert.toInt(newValue);
+                if (progressBar != null) progressBar.setAnimationDuration(duration);
+            }
+        }
+
+        @Override
+        public void processProperties(KrollDict d) {
+            super.processProperties(d);
+
+        }
+    }
 
 }
