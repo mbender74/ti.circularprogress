@@ -9,13 +9,9 @@
         app:trackWidth="20dp"
         app:trackColor="#000000"
         app:trackAlpha="25"
-        android:padding="10dp"
-        app:progress="100"
+        app:progress="10"
         app:strokeWidth="20dp"
-        app:textEnabled="false"
         app:strokeEndStyle="square"
-
-
         />
 
 </LinearLayout>

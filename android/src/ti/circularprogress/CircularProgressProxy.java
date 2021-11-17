@@ -34,8 +34,7 @@ public class CircularProgressProxy extends TiViewProxy {
     private static final String LCAT = "ExampleProxy";
     private static final boolean DBG = TiConfig.LOGD;
     CircularProgressView progressBar;
-    int maxValue = 100;
-    int currentProgress = 0;
+    float currentProgress = 0;
     int duration = 1000;
     int trackWidth = 30;
     int trackAlpha = 100;
@@ -64,73 +63,43 @@ public class CircularProgressProxy extends TiViewProxy {
     @Override
     public void handleCreationDict(KrollDict options) {
         super.handleCreationDict(options);
-
-        if (options.containsKey("maxValue")) {
-            maxValue = options.getInt("maxValue");
-            if (progressBar != null) progressBar.setMaxValue(maxValue);
-        }
         if (options.containsKey("progressValue")) {
-            currentProgress = options.getInt("progressValue");
-            if (progressBar != null) progressBar.setProgress(currentProgress);
+            currentProgress = options.getDouble("progressValue").floatValue();
         }
         if (options.containsKey("duration")) {
             duration = options.getInt("duration");
-            if (progressBar != null) progressBar.setAnimationDuration(duration);
         }
         if (options.containsKey("trackWidth")) {
             trackWidth = options.getInt("trackWidth");
-            if (progressBar != null) progressBar.setTrackWidth(trackWidth);
         }
         if (options.containsKey("trackColor")) {
             trackColor = TiConvert.toColor(options.getString("trackColor"));
-            if (progressBar != null) progressBar.setTrackColor(trackColor);
         }
         if (options.containsKey("progressColor")) {
             Object val = options.get("progressColor");
             if (val instanceof String) {
                 progressColor = TiConvert.toColor(options.getString("progressColor"));
-                if (progressBar != null) progressBar.setStrokeColor(trackColor);
             } else if (val instanceof Object[]) {
                 Object[] valObj = (Object[]) val;
                 if (valObj.length == 2) {
                     progressColorStart = TiConvert.toColor((String) valObj[0]);
                     progressColorEnd = TiConvert.toColor((String) valObj[1]);
-                    if (progressBar != null) {
-                        progressBar.setGradientStartColor(progressColorStart);
-                        progressBar.setGradientEndColor(progressColorEnd);
-                        int color = (Integer) new ArgbEvaluator().evaluate(0.5f, progressColorStart, progressColorEnd);
-                        progressBar.setGradientCenterColor(color);
-                    }
                 }
                 if (valObj.length == 3) {
                     progressColorStart = TiConvert.toColor((String) valObj[0]);
                     progressColorCenter = TiConvert.toColor((String) valObj[1]);
                     progressColorEnd = TiConvert.toColor((String) valObj[2]);
-                    if (progressBar != null) {
-                        progressBar.setGradientStartColor(progressColorStart);
-                        progressBar.setGradientCenterColor(progressColorCenter);
-                        progressBar.setGradientEndColor(progressColorEnd);
-                    }
                 }
             }
         }
         if (options.containsKey("trackAlpha")) {
             trackAlpha = options.getInt("trackAlpha");
-            if (progressBar != null) progressBar.setTrackAlpha(trackAlpha);
         }
         if (options.containsKey("progressWidth")) {
             strokeWidth = options.getInt("progressWidth");
-            if (progressBar != null) progressBar.setStrokeWidth(strokeWidth);
         }
         if (options.containsKey("roundedCorners")) {
             roundedCorners = options.getBoolean("roundedCorners");
-            if (progressBar != null) {
-                if (roundedCorners) {
-                    progressBar.setStrokeEnd(Paint.Cap.ROUND);
-                } else {
-                    progressBar.setStrokeEnd(Paint.Cap.SQUARE);
-                }
-            }
         }
     }
 
@@ -140,28 +109,34 @@ public class CircularProgressProxy extends TiViewProxy {
             int duration = (int) progressBar.getAnimationDuration();
 
             if (options.containsKey("startValue")) {
-                currentProgress = options.getInt("startValue");
+                currentProgress = options.getDouble("startValue").floatValue();
                 progressBar.setProgress(currentProgress);
             }
             if (options.containsKey("duration")) {
                 duration = options.getInt("duration");
             }
             if (options.containsKey("endValue")) {
-                currentProgress = options.getInt("endValue");
+                currentProgress = options.getDouble("endValue").floatValue();
             }
-            progressBar.animateProgressChange((float) currentProgress, (long) duration);
+            progressBar.animateProgressChange(currentProgress, (long) duration);
         }
     }
 
     @Kroll.getProperty
-    public int getProgressValue() {
-        return (int) progressBar.getProgress();
+    public float getProgressValue() {
+        return progressBar.getProgress();
     }
 
     @Kroll.setProperty
-    public void setProgressValue(int value) {
+    public void setProgressValue(float value) {
         currentProgress = value;
-        if (progressBar != null) progressBar.setProgress(value);
+        if (progressBar != null) {
+            if (duration == 0) {
+                progressBar.setProgress(currentProgress);
+            } else {
+                progressBar.animateProgressChange(currentProgress, (long) duration);
+            }
+        }
     }
 
     private class CPV extends TiUIView {
@@ -183,7 +158,6 @@ public class CircularProgressProxy extends TiViewProxy {
             layout = (LinearLayout) inflater.inflate(id_drawer_layout, null);
             progressBar = (CircularProgressView) layout.findViewById(id_bottomSheet);
 
-            progressBar.setMaxValue(maxValue);
             progressBar.setProgress(currentProgress);
             progressBar.setAnimationDuration(duration);
             progressBar.setTrackWidth(trackWidth);
@@ -208,7 +182,6 @@ public class CircularProgressProxy extends TiViewProxy {
                 progressBar.setGradientEndColor(progressColorEnd);
             }
 
-
             progressBar.setAnimationListener(new DeterminateProgressViewListener() {
                 @Override
                 public void onAnimationStart(float from, float to) {
@@ -231,19 +204,12 @@ public class CircularProgressProxy extends TiViewProxy {
                     fireEvent("progress", kd);
                 }
             });
-
             setNativeView(layout);
         }
 
         @Override
         public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy) {
             super.propertyChanged(key, oldValue, newValue, proxy);
-
-            if (key.equals("progressValue")) {
-                currentProgress = TiConvert.toInt(newValue);
-                if (progressBar != null)
-                    progressBar.animateProgressChange((float) currentProgress, (long) duration);
-            }
             if (key.equals("duration")) {
                 duration = TiConvert.toInt(newValue);
                 if (progressBar != null) progressBar.setAnimationDuration(duration);
@@ -255,6 +221,59 @@ public class CircularProgressProxy extends TiViewProxy {
             if (key.equals("trackWidth")) {
                 trackWidth = TiConvert.toInt(newValue);
                 if (progressBar != null) progressBar.setTrackWidth(trackWidth);
+            }
+            if (key.equals("trackColor")) {
+                trackColor = TiConvert.toColor((String) newValue);
+                if (progressBar != null) progressBar.setTrackColor(trackColor);
+            }
+            if (key.equals("progressColor")) {
+                if (newValue instanceof String) {
+                    progressColor = TiConvert.toColor((String) newValue);
+
+                    if (progressBar != null) {
+                        progressBar.setStrokeColor(progressColor);
+                        progressBar.setGradientStartColor(0);
+                        progressBar.setGradientCenterColor(0);
+                        progressBar.setGradientEndColor(0);
+                    }
+                } else if (newValue instanceof Object[]) {
+                    Object[] valObj = (Object[]) newValue;
+                    if (valObj.length == 2) {
+                        progressColorStart = TiConvert.toColor((String) valObj[0]);
+                        progressColorEnd = TiConvert.toColor((String) valObj[1]);
+                        progressColorCenter = -1;
+                    }
+                    if (valObj.length == 3) {
+                        progressColorStart = TiConvert.toColor((String) valObj[0]);
+                        progressColorCenter = TiConvert.toColor((String) valObj[1]);
+                        progressColorEnd = TiConvert.toColor((String) valObj[2]);
+                    }
+                    if (progressBar != null) {
+                        progressBar.setGradientStartColor(progressColorStart);
+                        if (progressColorCenter != -1) {
+                            progressBar.setGradientCenterColor(progressColorCenter);
+                        } else {
+                            int color = (Integer) new ArgbEvaluator().evaluate(0.5f, progressColorStart, progressColorEnd);
+                            progressBar.setGradientCenterColor(color);
+                        }
+                        progressBar.setGradientEndColor(progressColorEnd);
+                    }
+                }
+            }
+            if (key.equals("trackAlpha")) {
+                trackAlpha = TiConvert.toInt(newValue);
+                if (progressBar != null) progressBar.setTrackAlpha(trackAlpha);
+            }
+
+            if (key.equals("roundedCorners")) {
+                roundedCorners = TiConvert.toBoolean(newValue);
+                if (progressBar != null) {
+                    if (roundedCorners) {
+                        progressBar.setStrokeEnd(Paint.Cap.ROUND);
+                    } else {
+                        progressBar.setStrokeEnd(Paint.Cap.SQUARE);
+                    }
+                }
             }
         }
 
