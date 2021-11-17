@@ -9,10 +9,12 @@ Using https://github.com/kaandedeoglu/KDCircularProgress (iOS) and https://githu
 <img src="./assets/demo.gif" width="148" height="320" alt="Example iOS" />
 <img src="./assets/demo_android.gif" width="266" height="320" alt="Example android" />
 
+## Installation
 
-## Android
+* Download module
+* add `<module>ti.circularprogress</module>` to `tiapp.xml`
 
-### Installation
+### Android
 
 Add this to your build.gralde:
 ```
@@ -28,6 +30,13 @@ and you have to target min 22 in your tiapp.xml:
 
 
 ## Example :slightly_smiling_face:
+
+### Alloy
+```xml
+<CircularProgress module="ti.circularprogress"/>
+```
+
+### Classic
 ```js
 var cirularProgressModule = require("ti.circularprogress");
 var win = Ti.UI.createWindow({backgroundColor: '#fff'});
