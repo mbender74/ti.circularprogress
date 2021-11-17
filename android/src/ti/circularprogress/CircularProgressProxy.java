@@ -7,10 +7,10 @@
  */
 package ti.circularprogress;
 
+import android.animation.ArgbEvaluator;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 
@@ -43,6 +43,9 @@ public class CircularProgressProxy extends TiViewProxy {
     int trackColor = Color.BLACK;
     int progressColor = Color.RED;
     boolean roundedCorners = true;
+    int progressColorStart = -1;
+    int progressColorCenter = -1;
+    int progressColorEnd = -1;
 
     // Constructor
     public CircularProgressProxy() {
@@ -83,8 +86,33 @@ public class CircularProgressProxy extends TiViewProxy {
             if (progressBar != null) progressBar.setTrackColor(trackColor);
         }
         if (options.containsKey("progressColor")) {
-            progressColor = TiConvert.toColor(options.getString("progressColor"));
-            if (progressBar != null) progressBar.setStrokeColor(trackColor);
+            Object val = options.get("progressColor");
+            if (val instanceof String) {
+                progressColor = TiConvert.toColor(options.getString("progressColor"));
+                if (progressBar != null) progressBar.setStrokeColor(trackColor);
+            } else if (val instanceof Object[]) {
+                Object[] valObj = (Object[]) val;
+                if (valObj.length == 2) {
+                    progressColorStart = TiConvert.toColor((String) valObj[0]);
+                    progressColorEnd = TiConvert.toColor((String) valObj[1]);
+                    if (progressBar != null) {
+                        progressBar.setGradientStartColor(progressColorStart);
+                        progressBar.setGradientEndColor(progressColorEnd);
+                        int color = (Integer) new ArgbEvaluator().evaluate(0.5f, progressColorStart, progressColorEnd);
+                        progressBar.setGradientCenterColor(color);
+                    }
+                }
+                if (valObj.length == 3) {
+                    progressColorStart = TiConvert.toColor((String) valObj[0]);
+                    progressColorCenter = TiConvert.toColor((String) valObj[1]);
+                    progressColorEnd = TiConvert.toColor((String) valObj[2]);
+                    if (progressBar != null) {
+                        progressBar.setGradientStartColor(progressColorStart);
+                        progressBar.setGradientCenterColor(progressColorCenter);
+                        progressBar.setGradientEndColor(progressColorEnd);
+                    }
+                }
+            }
         }
         if (options.containsKey("trackAlpha")) {
             trackAlpha = options.getInt("trackAlpha");
@@ -125,15 +153,15 @@ public class CircularProgressProxy extends TiViewProxy {
         }
     }
 
-    @Kroll.setProperty
-    public void setProgressValue(int value){
-        currentProgress = value;
-        if (progressBar != null) progressBar.setProgress(value);
+    @Kroll.getProperty
+    public int getProgressValue() {
+        return (int) progressBar.getProgress();
     }
 
-    @Kroll.getProperty
-    public int getProgressValue(){
-        return (int) progressBar.getProgress();
+    @Kroll.setProperty
+    public void setProgressValue(int value) {
+        currentProgress = value;
+        if (progressBar != null) progressBar.setProgress(value);
     }
 
     private class CPV extends TiUIView {
@@ -169,24 +197,38 @@ public class CircularProgressProxy extends TiViewProxy {
                 progressBar.setStrokeEnd(Paint.Cap.SQUARE);
             }
 
-            progressBar.setAnimationListener(new DeterminateProgressViewListener(){
+            if (progressColorStart != -1 && progressColorEnd != -1) {
+                progressBar.setGradientStartColor(progressColorStart);
+                if (progressColorCenter != -1) {
+                    progressBar.setGradientCenterColor(progressColorCenter);
+                } else {
+                    int color = (Integer) new ArgbEvaluator().evaluate(0.5f, progressColorStart, progressColorEnd);
+                    progressBar.setGradientCenterColor(color);
+                }
+                progressBar.setGradientEndColor(progressColorEnd);
+            }
+
+
+            progressBar.setAnimationListener(new DeterminateProgressViewListener() {
                 @Override
                 public void onAnimationStart(float from, float to) {
                     KrollDict kd = new KrollDict();
                     kd.put("from", from);
                     kd.put("to", to);
-                    fireEvent("start" , kd);
+                    fireEvent("start", kd);
                 }
+
                 @Override
                 public void onAnimationEnd() {
                     currentProgress = (int) progressBar.getProgress();
-                    fireEvent("done" , new KrollDict());
+                    fireEvent("done", new KrollDict());
                 }
+
                 @Override
                 public void onAnimationProgress(float progress) {
                     KrollDict kd = new KrollDict();
                     kd.put("progress", progress);
-                    fireEvent("progress" , kd);
+                    fireEvent("progress", kd);
                 }
             });
 
@@ -205,6 +247,14 @@ public class CircularProgressProxy extends TiViewProxy {
             if (key.equals("duration")) {
                 duration = TiConvert.toInt(newValue);
                 if (progressBar != null) progressBar.setAnimationDuration(duration);
+            }
+            if (key.equals("progressWidth")) {
+                strokeWidth = TiConvert.toInt(newValue);
+                if (progressBar != null) progressBar.setStrokeWidth(strokeWidth);
+            }
+            if (key.equals("trackWidth")) {
+                trackWidth = TiConvert.toInt(newValue);
+                if (progressBar != null) progressBar.setTrackWidth(trackWidth);
             }
         }
 
