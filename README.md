@@ -52,7 +52,6 @@ var circularProgessView = cirularProgressModule.createCircularProgress({
 	progressWidth: 50,
 	trackWidth: 10,
 	duration: 0,
-	maxValue: 100,
 	progressValue: 10,
 	gradientRotateSpeed: 1.0,
 	glowAmount: 0.8,
@@ -97,8 +96,7 @@ win.open();
 * `progressWidth` - width of the progress bar
 * `trackWidth` - width of the background track
 * `duration` - duration for animation. If 0 `progressValue` won't animate a change
-* `maxValue` - maximum value of the progressbar
-* `progressValue` - current value of the progressbar
+* `progressValue` - current value of the progressbar (0 - 100)
 
 ## Events
 * `progress` - returns event.progress
