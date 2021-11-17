@@ -8,18 +8,10 @@
 ## Example :slightly_smiling_face:
 ```js
 var cirularProgressModule = require("ti.circularprogress");
-var win = Ti.UI.createWindow({
-	backgroundColor: '#fff',
-  theme: "Theme.Avantiscmms"
-});
-var btn = Ti.UI.createButton({
-	title: "animate from 0",
-	bottom: 0
-})
-var btn2 = Ti.UI.createButton({
-	title: "set random value",
-	bottom: 50
-})
+var win = Ti.UI.createWindow({backgroundColor: '#fff'});
+var btn = Ti.UI.createButton({title: "animate from 0",bottom: 0});
+var btn2 = Ti.UI.createButton({title: "set random value",bottom: 50});
+var lbl = Ti.UI.createLabel({text: "10%",color:"#000"});
 var circularProgessView = cirularProgressModule.createCircularProgress({
 	height: 200,
 	width: 200,
@@ -39,9 +31,12 @@ var circularProgessView = cirularProgressModule.createCircularProgress({
 
 circularProgessView.addEventListener('done', function() {
 	console.log("reached end value");
+	lbl.text = circularProgessView.progressValue + "%";
 });
 
-circularProgessView.addEventListener('progressing', function(e) {
+circularProgessView.addEventListener('progress', function(e) {
+  console.log("progress: ", e.progress);
+	lbl.text = Math.round(e.progress) + "%";
 	//console.log("+++++++++++++++ circualrProgessView progressing: "+e.progressValue);
 });
 
@@ -54,9 +49,11 @@ btn.addEventListener("click", function() {
 })
 
 btn2.addEventListener("click", function() {
-	circularProgessView.progressValue = Math.random() * 100;
+	var rnd = Math.round(Math.random() * 100);
+	circularProgessView.progressValue = rnd;
+	lbl.text = rnd + "%";
 })
-win.add([circularProgessView, btn, btn2])
+win.add([circularProgessView, btn, btn2,lbl])
 win.open();
  ```
 ## iOS

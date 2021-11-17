@@ -1,6 +1,6 @@
 repositories {
-		maven { url 'https://jitpack.io' }
-	}
+	maven { url 'https://jitpack.io' }
+}
 dependencies {
-	    implementation 'com.github.owl-93:DeterminateProgressView:v1.4.1'
+	implementation 'com.github.owl-93.Determinate-Progress-View:release:v1.4.4'
 }

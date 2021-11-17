@@ -125,6 +125,17 @@ public class CircularProgressProxy extends TiViewProxy {
         }
     }
 
+    @Kroll.setProperty
+    public void setProgressValue(int value){
+        currentProgress = value;
+        if (progressBar != null) progressBar.setProgress(value);
+    }
+
+    @Kroll.getProperty
+    public int getProgressValue(){
+        return (int) progressBar.getProgress();
+    }
+
     private class CPV extends TiUIView {
         public CPV(TiViewProxy proxy) {
             super(proxy);
@@ -168,7 +179,14 @@ public class CircularProgressProxy extends TiViewProxy {
                 }
                 @Override
                 public void onAnimationEnd() {
+                    currentProgress = (int) progressBar.getProgress();
                     fireEvent("done" , new KrollDict());
+                }
+                @Override
+                public void onAnimationProgress(float progress) {
+                    KrollDict kd = new KrollDict();
+                    kd.put("progress", progress);
+                    fireEvent("progress" , kd);
                 }
             });
 

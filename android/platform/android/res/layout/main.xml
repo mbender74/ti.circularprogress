@@ -6,13 +6,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:drawTrack="true"
-        app:trackWidth="30dp"
+        app:trackWidth="20dp"
         app:trackColor="#000000"
         app:trackAlpha="25"
         android:padding="10dp"
-        app:progress="95"
+        app:progress="50"
         app:strokeWidth="20dp"
         app:textEnabled="false"
+        app:strokeEndStyle="square"
         />
 
 </LinearLayout>
