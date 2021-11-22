@@ -39,22 +39,40 @@ and you have to target min 22 in your tiapp.xml:
 ```js
 var cirularProgressModule = require("ti.circularprogress");
 var win = Ti.UI.createWindow({backgroundColor: '#fff'});
-var btn = Ti.UI.createButton({title: "animate from 0", bottom: 0});
-var btn2 = Ti.UI.createButton({title: "set random value", bottom: 50});
-var btn3 = Ti.UI.createButton({title: "change track", bottom: 100});
-var lbl = Ti.UI.createLabel({text: "10%", color:"#000"});
+var btn = Ti.UI.createButton({title: "animate from 0", bottom: 50});
+var btn2 = Ti.UI.createButton({title: "set random value", bottom: 100});
+var btn3 = Ti.UI.createButton({title: "change track", bottom: 150});
+var lbl = Ti.UI.createLabel({
+  color: '#bbffffff',
+  width:Ti.UI.SIZE,
+  height:Ti.UI.SIZE,
+  textAlign:Ti.UI.TEXT_ALIGNMENT_CENTER,
+  font: {
+    fontFamily : 'Arial',
+    fontSize: 44,
+    fontWeight: 'bold',
+  },
+  shadowColor: '#77000000',
+  shadowRadius: 4,
+  shadowOffset: {
+    x: 1,
+    y: 1
+  },
+  text: ''
+});
+
 var circularProgessView = cirularProgressModule.createCircularProgress({
 	height: 200,
 	width: 200,
 	trackColor: '#777',
 	progressColor: ['#f00', "#ff0"],
 	roundedCorners: false,
-	progressWidth: 50,
+	progressWidth: 20,
 	trackWidth: 10,
-	duration: 0,
+	duration: 150,
 	progressValue: 10,
 	gradientRotateSpeed: 1.0,
-	glowAmount: 0.8,
+	glowAmount: 0.2,
 });
 
 circularProgessView.addEventListener('done', function() {
@@ -82,12 +100,19 @@ btn2.addEventListener("click", function() {
 })
 
 btn3.addEventListener("click", function() {
-	circularProgessView.trackWidth = Math.round(Math.random() * 40) + 10;
-	circularProgessView.progressWidth = Math.round(Math.random() * 40) + 10;
+	circularProgessView.trackWidth = Math.round(Math.random() * 10) + 10;
+	circularProgessView.progressWidth = Math.round(Math.random() * 10) + 10;
+  circularProgessView.roundedCorners = circularProgessView.roundedCorners == true ? circularProgessView.roundedCorners = false : circularProgessView.roundedCorners = true;
+
+  console.log("trackWidth: ", circularProgessView.trackWidth);
+  console.log("progressWidth: ", circularProgessView.progressWidth);
+  console.log("roundedCorners: ", circularProgessView.roundedCorners);
+
+
 })
 win.add([circularProgessView, btn, btn2, btn3, lbl])
 win.open();
- ```
+```
 
 ## Properties
 * `trackColor` - background track color
