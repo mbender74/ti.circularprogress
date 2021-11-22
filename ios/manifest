@@ -16,4 +16,4 @@ name: ti.circularprogress
 moduleid: ti.circularprogress
 guid: cd9b6fb3-38f5-48be-89f4-df1a20aa95c7
 platform: iphone
-minsdk: 10.2.0
+minsdk: 10.0.0

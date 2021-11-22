@@ -9,19 +9,38 @@
 import UIKit
 import TitaniumKit
 
-@objc(TiCircularprogressViewProxy)
-class TiCircularprogressViewProxy: TiViewProxy {
+@objc(TiCircularprogressCircularProgressProxy)
+class TiCircularprogressCircularProgressProxy: TiViewProxy {
     private var _duration: TimeInterval
     private var _progressValue: NSNumber
+    private var _progressWidth: NSNumber
+    private var _trackWidth: NSNumber
+
+    private var _roundedCorners: NSNumber
+    private var _clockwise: NSNumber
+
+    
+    var circularprogressView: KDCircularProgress!
+    var trackColor:UIColor = UIColor.clear
+
+    var progressThickness:CGFloat = 0.2
+    var trackThickness:CGFloat = 0.6
+    var glowAmount:CGFloat = 0.9
+    var gradientRotateSpeed:CGFloat = 1
+    
+    
     
     @objc public var progressValue: NSNumber {
         get { return _progressValue }
         set {
-            _progressValue = NSNumber(value: (Int(truncating: newValue) / 100))
+          _progressValue = newValue
           self.replaceValue(newValue, forKey: "progressValue", notification: false)
           if circularprogressView != nil {
-              if NSNumber(value:_duration) != 0.0 {
-                  circularprogressView.animate(toAngle: (_progressValue.doubleValue).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0, duration: _duration, relativeDuration: true, proxy:circularprogressView.myProxy, completion: { result in
+              if NSNumber(value:_duration) != 0 {
+                  
+                  let endValue = (CGFloat((TiUtils.floatValue(_progressValue))/100.0).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0)
+                  
+                  circularprogressView.animate(toAngle: endValue, duration: _duration, relativeDuration: true, proxy:circularprogressView.myProxy, completion: { result in
                       self.circularprogressView.pauseAnimation()
                       self.fireEvent("done")
                       //print("go to next lvl", result)
@@ -29,12 +48,58 @@ class TiCircularprogressViewProxy: TiViewProxy {
               }
               else {
                   //self.circularprogressView.stopAnimation()
-                  circularprogressView.progress = _progressValue
+                  circularprogressView.progress = NSNumber(value: TiUtils.floatValue(_progressValue)/100.0)
               }
           }
         }
       }
 
+    @objc public var progressWidth: NSNumber {
+        get { return _progressWidth }
+        set {
+            _progressWidth = newValue
+            if (circularprogressView != nil){
+                progressThickness = (TiUtils.floatValue(_progressWidth) / 100).myclamp(lowerBound: 0.0, upperBound: 1.0)
+                circularprogressView.progressThickness = progressThickness * 2.0
+            }
+
+        }
+      }
+
+    @objc public var trackWidth: NSNumber {
+        get { return _trackWidth }
+        set {
+            _trackWidth = newValue
+            if (circularprogressView != nil){
+                trackThickness = (TiUtils.floatValue(_trackWidth) / 100).myclamp(lowerBound: 0.0, upperBound: 1.0)
+                circularprogressView.trackThickness = trackThickness * 2.0
+            }
+        }
+      }
+
+    @objc public var roundedCorners: NSNumber {
+        get { return _roundedCorners }
+        set {
+            _roundedCorners = newValue
+            if (circularprogressView != nil){
+                circularprogressView.roundedCorners = TiUtils.boolValue(_roundedCorners)
+            }
+        }
+      }
+
+    @objc public var clockwise: NSNumber {
+        get { return _clockwise }
+        set {
+            _clockwise = newValue
+            if (circularprogressView != nil){
+                circularprogressView.clockwise = TiUtils.boolValue(_clockwise)
+            }
+        }
+      }
+
+    
+    
+    
     @objc public var duration: NSNumber {
         get { return NSNumber(value:_duration) }
         set {
@@ -42,24 +107,18 @@ class TiCircularprogressViewProxy: TiViewProxy {
           //self.replaceValue(newValue, forKey: "duration", notification: false)
         }
       }
-
     
-    
-    var circularprogressView: KDCircularProgress!
-    var trackColor:UIColor = UIColor.clear
-    var roundedCorners:Bool = false
-    var clockwise:Bool = true
 
-    var progressThickness:CGFloat = 0.2
-    var trackThickness:CGFloat = 0.6
-    var glowAmount:CGFloat = 0.9
-    var gradientRotateSpeed:CGFloat = 1
-//    var progressColor:[Array<Any>] = []
 
     
     override init() {
         _progressValue = NSNumber(value: 0.0)
         _duration = TimeInterval(0.0)
+        _trackWidth = 10
+        _progressWidth = 10
+        _roundedCorners = true
+        _clockwise = true
+        
          super.init()
      }
        
@@ -71,13 +130,13 @@ class TiCircularprogressViewProxy: TiViewProxy {
                trackColor = TiUtils.colorValue(properties["trackColor"])!.color
            }
            
-           if properties["roundedCorners"] != nil {
-               roundedCorners = TiUtils.boolValue(properties["roundedCorners"])
-           }
-
-           if properties["clockwise"] != nil {
-               clockwise = TiUtils.boolValue(properties["clockwise"])
-           }
+//           if properties["roundedCorners"] != nil {
+//               roundedCorners = TiUtils.boolValue(properties["roundedCorners"])
+//           }
+//
+//           if properties["clockwise"] != nil {
+//               clockwise = TiUtils.boolValue(properties["clockwise"])
+//           }
            
            if properties["gradientRotateSpeed"] != nil {
                gradientRotateSpeed = TiUtils.floatValue(properties["gradientRotateSpeed"])
@@ -106,13 +165,13 @@ class TiCircularprogressViewProxy: TiViewProxy {
            circularprogressView.startAngle = -90
            circularprogressView.progressThickness = progressThickness * 2.0
            circularprogressView.trackThickness = trackThickness * 2.0
-           circularprogressView.clockwise = clockwise
+           circularprogressView.clockwise = TiUtils.boolValue(clockwise)
            circularprogressView.gradientRotateSpeed = gradientRotateSpeed
-           circularprogressView.roundedCorners = roundedCorners
+           circularprogressView.roundedCorners = TiUtils.boolValue(roundedCorners)
            circularprogressView.glowMode = .forward
            circularprogressView.glowAmount = glowAmount
            circularprogressView.trackColor = trackColor
-           circularprogressView.progress = _progressValue
+           circularprogressView.progress = progressValue
        
            if properties["progressColor"] != nil {
                let progressColor = (properties["progressColor"] as! [String])
@@ -238,7 +297,7 @@ class TiCircularprogressViewProxy: TiViewProxy {
           })
       }
       else if params["startValue"] == nil && params["endValue"] != nil {
-          let endValue = (CGFloat((TiUtils.floatValue(params["endValue"]))/100.0).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0) / 100
+          let endValue = (CGFloat((TiUtils.floatValue(params["endValue"]))/100.0).myclamp(lowerBound: 0.0, upperBound: 1.0) * 360.0)
 
           circularprogressView.animate(toAngle: endValue, duration: animateDuration, relativeDuration: true, proxy: self, completion: { result in
               self.circularprogressView.pauseAnimation()

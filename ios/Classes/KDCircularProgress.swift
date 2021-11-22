@@ -13,6 +13,7 @@ import TitaniumKit
 }
 
 public var parentProxy: TiViewProxy!
+public var _processThickness: CGFloat!
 
 public func updateProgress(value:Double) {
     if parentProxy != nil {
@@ -76,6 +77,7 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
     @IBInspectable public var roundedCorners: Bool = true {
         didSet {
             progressLayer.roundedCorners = roundedCorners
+            progressLayer.setNeedsDisplay()
         }
     }
     
@@ -85,47 +87,53 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
         }
     }
     
-    @IBInspectable public var gradientRotateSpeed: CGFloat = 0.0 {
+    public var gradientRotateSpeed: CGFloat = 0.0 {
         didSet {
             progressLayer.gradientRotateSpeed = gradientRotateSpeed
         }
     }
     
-    @IBInspectable public var glowAmount: CGFloat = 1.0 {
+    public var glowAmount: CGFloat = 1.0 {
         didSet {
             glowAmount = glowAmount.clamp(lowerBound: 0.0, upperBound: 1.0)
             progressLayer.glowAmount = glowAmount
+            progressLayer.setNeedsDisplay()
         }
     }
     
     public var glowMode: KDCircularProgressGlowMode = .forward {
         didSet {
             progressLayer.glowMode = glowMode
+            progressLayer.setNeedsDisplay()
         }
     }
     
-    @IBInspectable public var progressThickness: CGFloat = 0.4 {
+    public var progressThickness:CGFloat = 0.5 {
+
         didSet {
             progressThickness = progressThickness.clamp(lowerBound: 0.0, upperBound: 1.0)
             progressLayer.progressThickness = progressThickness / 2.0
+            progressLayer.setNeedsDisplay()
         }
     }
     
-    @IBInspectable public var trackThickness: CGFloat = 0.5 {//Between 0 and 1
+    public var trackThickness: CGFloat = 0.5 {//Between 0 and 1
         didSet {
             trackThickness = trackThickness.clamp(lowerBound: 0.0, upperBound: 1.0)
             progressLayer.trackThickness = trackThickness / 2.0
+            progressLayer.setNeedsDisplay()
+
         }
     }
     
-    @IBInspectable public var trackColor: UIColor = .black {
+    public var trackColor: UIColor = .black {
         didSet {
             progressLayer.trackColor = trackColor
             progressLayer.setNeedsDisplay()
         }
     }
     
-    @IBInspectable public var progressInsideFillColor: UIColor? = nil {
+    public var progressInsideFillColor: UIColor? = nil {
         didSet {
             progressLayer.progressInsideFillColor = progressInsideFillColor ?? .clear
         }
@@ -177,6 +185,7 @@ public class KDCircularProgress: UIView, CAAnimationDelegate {
     }
     
     private func setInitialValues() {
+        progressThickness = 0.5
         radius = (frame.size.width / 2.0) * 0.8 //We always apply a 20% padding, stopping glows from being clipped
         backgroundColor = .clear
         set(colors: .white, .cyan)
