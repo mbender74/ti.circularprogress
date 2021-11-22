@@ -48,7 +48,7 @@ class TiCircularprogressCircularProgressProxy: TiViewProxy {
               }
               else {
                   //self.circularprogressView.stopAnimation()
-                  circularprogressView.progress = NSNumber(value: TiUtils.floatValue(_progressValue)/100.0)
+                  circularprogressView.progress = NSNumber(value: CGFloat((TiUtils.floatValue(_progressValue))/100.0))
               }
           }
         }
@@ -112,7 +112,7 @@ class TiCircularprogressCircularProgressProxy: TiViewProxy {
 
     
     override init() {
-        _progressValue = NSNumber(value: 0.0)
+        _progressValue = 0
         _duration = TimeInterval(0.0)
         _trackWidth = 10
         _progressWidth = 10
@@ -171,7 +171,11 @@ class TiCircularprogressCircularProgressProxy: TiViewProxy {
            circularprogressView.glowMode = .forward
            circularprogressView.glowAmount = glowAmount
            circularprogressView.trackColor = trackColor
-           circularprogressView.progress = progressValue
+           if properties["progressValue"] != nil {
+               _progressValue = NSNumber(value: TiUtils.floatValue(properties["progressValue"]))
+               circularprogressView.progress = NSNumber(value: CGFloat((TiUtils.floatValue(_progressValue))/100.0))
+           }
+           
        
            if properties["progressColor"] != nil {
                let progressColor = (properties["progressColor"] as! [String])
