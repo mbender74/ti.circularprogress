@@ -16,7 +16,9 @@ public var parentProxy: TiViewProxy!
 
 public func updateProgress(value:Double) {
     if parentProxy != nil {
-        parentProxy.fireEvent("progressing", with: ["progressValue": NSNumber(value: value.mod(between: 0.0, and: 360.0, byIncrementing: 360.0) / 360.0)])
+        parentProxy.replaceValue(NSNumber(value: ((value.mod(between: 0.0, and: 360.0, byIncrementing: 360.0) / 360.0) * 100.0)), forKey: "progressValue", notification: false)
+
+        parentProxy.fireEvent("progress", with: ["progress": NSNumber(value: ((value.mod(between: 0.0, and: 360.0, byIncrementing: 360.0) / 360.0) * 100.0))])
 
 //        parentProxy.fireEvent("progressing")
     }
