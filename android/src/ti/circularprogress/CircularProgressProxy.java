@@ -45,6 +45,7 @@ public class CircularProgressProxy extends TiViewProxy {
     int progressColorStart = -1;
     int progressColorCenter = -1;
     int progressColorEnd = -1;
+    int startingAngle = 0;
 
     // Constructor
     public CircularProgressProxy() {
@@ -97,6 +98,9 @@ public class CircularProgressProxy extends TiViewProxy {
         }
         if (options.containsKey("progressWidth")) {
             strokeWidth = options.getInt("progressWidth");
+        }
+        if (options.containsKey("startingAngle")) {
+            startingAngle = options.getInt("startingAngle");
         }
         if (options.containsKey("roundedCorners")) {
             roundedCorners = options.getBoolean("roundedCorners");
@@ -164,6 +168,7 @@ public class CircularProgressProxy extends TiViewProxy {
             progressBar.setTrackColor(trackColor);
             progressBar.setStrokeColor(progressColor);
             progressBar.setTrackAlpha(trackAlpha);
+            progressBar.setStartingAngle(startingAngle);
             progressBar.setStrokeWidth(strokeWidth);
             if (roundedCorners) {
                 progressBar.setStrokeEnd(Paint.Cap.ROUND);
@@ -263,6 +268,11 @@ public class CircularProgressProxy extends TiViewProxy {
             if (key.equals("trackAlpha")) {
                 trackAlpha = TiConvert.toInt(newValue);
                 if (progressBar != null) progressBar.setTrackAlpha(trackAlpha);
+            }
+
+            if (key.equals("startingAngle")) {
+                startingAngle = TiConvert.toInt(newValue);
+                if (progressBar != null) progressBar.setStartingAngle(startingAngle);
             }
 
             if (key.equals("roundedCorners")) {
