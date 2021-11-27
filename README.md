@@ -6,7 +6,7 @@ Using https://github.com/kaandedeoglu/KDCircularProgress (iOS) and https://githu
 
 ## Demo
 
-<img src="./assets/demo.gif" width="210" height="320" alt="Example iOS" /> <img src="./assets/demo_android.gif" width="221" height="320" alt="Example android" />
+<img src="./assets/demo.gif" width="210" height="320" alt="Example iOS" /> <img src="./assets/demo_android.gif" width="241" height="322" alt="Example android" />
 
 ## Installation
 

@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.owl93.dpb.CircularProgressView;
@@ -21,6 +22,8 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.TiConfig;
+import org.appcelerator.titanium.TiApplication;
+import org.appcelerator.titanium.TiDimension;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.util.TiRHelper;
@@ -60,6 +63,13 @@ public class CircularProgressProxy extends TiViewProxy {
         return view;
     }
 
+    private int toPx(Object size) {
+        ViewGroup rootViewGroup =
+                TiApplication.getAppCurrentActivity().getWindow().getDecorView().findViewById(
+                        android.R.id.content);
+        return TiConvert.toTiDimension(size, TiDimension.COMPLEX_UNIT_AUTO).getAsPixels(rootViewGroup);
+    }
+
     // Handle creation options
     @Override
     public void handleCreationDict(KrollDict options) {
@@ -71,7 +81,7 @@ public class CircularProgressProxy extends TiViewProxy {
             duration = options.getInt("duration");
         }
         if (options.containsKey("trackWidth")) {
-            trackWidth = options.getInt("trackWidth");
+            trackWidth = toPx(options.getInt("trackWidth"));
         }
         if (options.containsKey("trackColor")) {
             trackColor = TiConvert.toColor(options.getString("trackColor"));
@@ -97,7 +107,7 @@ public class CircularProgressProxy extends TiViewProxy {
             trackAlpha = options.getInt("trackAlpha");
         }
         if (options.containsKey("progressWidth")) {
-            strokeWidth = options.getInt("progressWidth");
+            strokeWidth = toPx(options.getInt("progressWidth"));
         }
         if (options.containsKey("startingAngle")) {
             startingAngle = options.getInt("startingAngle");
@@ -122,7 +132,7 @@ public class CircularProgressProxy extends TiViewProxy {
             if (options.containsKey("endValue")) {
                 currentProgress = options.getDouble("endValue").floatValue();
             }
-            progressBar.animateProgressChange(currentProgress, (long) duration);
+            progressBar.animateProgressChange(currentProgress, duration);
         }
     }
 
@@ -138,7 +148,7 @@ public class CircularProgressProxy extends TiViewProxy {
             if (duration == 0) {
                 progressBar.setProgress(currentProgress);
             } else {
-                progressBar.animateProgressChange(currentProgress, (long) duration);
+                progressBar.animateProgressChange(currentProgress, duration);
             }
         }
     }
@@ -160,7 +170,7 @@ public class CircularProgressProxy extends TiViewProxy {
 
             LayoutInflater inflater = LayoutInflater.from(proxy.getActivity());
             layout = (LinearLayout) inflater.inflate(id_drawer_layout, null);
-            progressBar = (CircularProgressView) layout.findViewById(id_bottomSheet);
+            progressBar = layout.findViewById(id_bottomSheet);
 
             progressBar.setProgress(currentProgress);
             progressBar.setAnimationDuration(duration);
@@ -175,6 +185,10 @@ public class CircularProgressProxy extends TiViewProxy {
             } else {
                 progressBar.setStrokeEnd(Paint.Cap.SQUARE);
             }
+
+            KrollDict kd = new KrollDict();
+            kd.put("progress", currentProgress);
+            fireEvent("progress", kd);
 
             if (progressColorStart != -1 && progressColorEnd != -1) {
                 progressBar.setGradientStartColor(progressColorStart);
@@ -220,11 +234,11 @@ public class CircularProgressProxy extends TiViewProxy {
                 if (progressBar != null) progressBar.setAnimationDuration(duration);
             }
             if (key.equals("progressWidth")) {
-                strokeWidth = TiConvert.toInt(newValue);
+                strokeWidth = toPx(TiConvert.toInt(newValue));
                 if (progressBar != null) progressBar.setStrokeWidth(strokeWidth);
             }
             if (key.equals("trackWidth")) {
-                trackWidth = TiConvert.toInt(newValue);
+                trackWidth = toPx(TiConvert.toInt(newValue));
                 if (progressBar != null) progressBar.setTrackWidth(trackWidth);
             }
             if (key.equals("trackColor")) {
